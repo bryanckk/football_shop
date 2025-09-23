@@ -13,16 +13,14 @@
 {% endif %}
 
 <p>Price: Rp. {{ product.price }}</p>
-<p>Rating: 
-    {% for i in "12345" %}
-        {% if forloop.counter <= product.rating %}
-            ⭐
-        {% else %}
-            ☆
-        {% endif %}
-    {% endfor %}
-</p>
+<p>Rating: {{ product.rating }}/5</p>
 <p>Description: {{ product.description }}</p>
 <p>{{ product.stock }} left</p>
+
+{% if product.user %}
+    <p>Author: {{ product.user.username }}</p>
+{% else %}
+    <p>Author: Anonymous</p>
+{% endif %}
 
 {% endblock content %}
