@@ -13,14 +13,14 @@
 {% endif %}
 
 <p>Price: Rp. {{ product.price }}</p>
-<p>Rating: {{ product.rating }}/5</p>
+<p>Rating: {{ product.rating }}/5.00</p>
 <p>Description: {{ product.description }}</p>
 <p>{{ product.stock }} left</p>
 
 {% if product.user %}
-    <p>Author: {{ product.user.username }}</p>
+    <p>Seller: {{ product.user.username }}</p>
 {% else %}
-    <p>Author: Anonymous</p>
+    <p>Seller: Anonymous</p>
 {% endif %}
 
 {% endblock content %}

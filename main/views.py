@@ -15,9 +15,9 @@ from django.core import serializers
 def show_main(request):
     filter_type = request.GET.get("filter", "all")  # default 'all'
     if filter_type == "all":
-        product_list = Product.objects.all()
+        product_list = Product.objects.all().order_by('-is_featured', '-id')
     else:
-        product_list = Product.objects.filter(user=request.user)
+        product_list = Product.objects.filter(user=request.user).order_by('-is_featured', '-id')
     
     context = {
         'npm': '2406346011',
