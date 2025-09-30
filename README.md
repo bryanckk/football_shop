@@ -1,4 +1,39 @@
+##Tugas 5
+
+Jawaban Pertanyaan:
+1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+Jawab:
+Urutan prioritas CSS ditentukan oleh mekanisme cascade dan specificity (yang paling kuat kalau pakai !important), setelah itu aturan inline di atribut style, lalu selector berdasarkan ID (#id), kemudian selector kelas/atribut/pseudo-class (.kelas, [type="text"], :hover), lalu selector elemen/pseudo-element (div, p, ::before), dan paling rendah selector universal atau default. Ketika dua aturan punya specificity yang sama, yang muncul belakang di stylesheet (source order) yang menang.
+
+2. Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+Jawab:
+Responsive design penting karena pengguna sekarang membuka situs dari layar yang sangat beragam (ponsel, tablet, laptop, TV) sehingga tampilan dan interaksi harus menyesuaikan supaya pengalaman tetap nyaman. Selain itu responsive meningkatkan keterbacaan, memperkecil bounce rate, membantu SEO (search engine memprioritaskan mobile-friendly), dan sering membuat performa lebih baik lewat teknik seperti gambar adaptif atau lazy loading. Contoh aplikasi yang jelas sudah responsive: Google Search/Gmail, YouTube, Twitter, dll. Mereka merombak tampilan dan navigasi untuk layar kecil. Contoh yang sering belum responsive adalah banyak situs pemerintah lama atau aplikasi enterprise yang tujuan awalnya memang dibangun untuk desktop dan belum direfactor (alasan umumnya karena sudah terdapat kode legacy, tabel atau layout kompleks yang susah diubah, atau keterbatasan anggaran dan prioritas).
+
+3. Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+Jawab:
+Margin, border, dan padding adalah bagian dari box model dan fungsinya berbeda. Margin adalah ruang di luar elemen untuk memisahkan elemen lain (transparent). Sementara itu, border adalah garis tepi yang mengelilingi elemen. Terakhir, padding adalah ruang di dalam antara konten dan border (bagian dari box sehingga background elemen mengisinya). Implementasinya di CSS cukup sederhana yaitu margin untuk jarak luar, border untuk menentukan ketebalan/gaya/warna, dan padding untuk jarak dalam.
+
+Misal:
+.element {
+   padding: 10px; /* Ruang dalam antara konten dan border */
+   border: 2px; /* Garis batas */
+   margin 10px; /* Ruang luar dari elemen lain */
+}
+
+4. Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+Jawab: 
+Flexbox adalah model layout satu dimensi yang dapat bekerja secara horizontal maupun vertikal. Konsep ini sangat ideal digunakan pada komponen kecil seperti navigation bar atau card layout, karena memberikan fleksibilitas dalam menyusun item di dalam sebuah container. Dengan properti seperti flex-direction, justify-content, dan align-items, Flexbox memungkinkan pengaturan arah, distribusi, dan penyelarasan elemen dengan lebih mudah.
+
+Sementara itu, Grid Layout merupakan model layout dua dimensi yang mampu mengatur baris dan kolom sekaligus. Pendekatan ini sangat cocok dipakai untuk menyusun halaman yang kompleks maupun galeri gambar, karena strukturnya dapat ditentukan dengan properti seperti grid-template-columns dan grid-template-rows. Secara umum, Flexbox lebih sering digunakan untuk penyelarasan dan distribusi item dalam satu sumbu (axis), sedangkan Grid lebih efektif ketika dibutuhkan tata letak yang kompleks dengan kontrol presisi terhadap baris dan kolom.
+
+5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
+Jawab:
+Pertama-tama, saya memasang framework styling ke dalam aplikasi. Lalu, saya mengimplementasikan fitur edit dan delete untuk entitas berita dengan membuat view (di views.py), menambahkan rute/endpoint pada urls.py, serta membuat template yang menampilkan form edit dan konfirmasi hapus. Kemudian, saya membuat berkas HTML terpisah untuk navigation bar di folder templates agar komponennya modular dan bisa digunakan ulang. Saya menyertakan navigation bar tersebut ke template utama sehingga navbar tampil di seluruh halaman aplikasi. Saya menyiapkan mekanisme untuk melayani static files di produksi (middleware Whitenoise) dan mengkonfigurasikan settings.py terkait file statis supaya Django tahu di mana menyimpan dan mengumpulkan aset statis. Terakhir, saya memasukkan CSS hasil build Tailwind ke dalam base.html sehingga semua halaman mewarisi styling dan skrip dasar.
+TIdak lupa saya juga membuat global.css sebagai stylesheet default lalu dihubungkan ke html.
+
+---
 ##Tugas 4
+
 Jawaban Pertanyaan:
 1. Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya.
 Jawab:
