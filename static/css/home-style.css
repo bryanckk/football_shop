@@ -1,0 +1,78 @@
+.judul { font-family: "Font Judul", "Helvetica Neue", Arial, sans-serif; }
+
+body {
+  background-color: #fbe0c3;
+  margin: 0;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  color: #222;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background-color: #354749;
+}
+.navbar a {
+  color: #ffffff;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.navbar a:hover { background-color: rgba(255,255,255,0.08); }
+
+.navbar .logo { display:flex; align-items:center; gap:10px; }
+
+.dropdown { position: relative; display: inline-block; }
+
+.dropbtn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px 12px;
+}
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #7d8e95;
+  min-width: 160px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  z-index: 100;
+}
+.dropdown-content a {
+  display:block;
+  padding: 10px 12px;
+  color: #000;
+  text-decoration: none;
+}
+.dropdown-content a:hover { background-color: #ddd; }
+.dropdown:hover .dropdown-content { display:block; }
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+img { max-width:100%; height:auto; display:block; }
+
+
+.thumb {
+  width: 260px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
