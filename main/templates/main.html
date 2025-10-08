@@ -1,47 +1,80 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static %}
 
 {% block meta %}
-<title>Football Hub</title>
+<title>Football Shop - Products</title>
 {% endblock meta %}
 
 {% block content %}
 <div class="bg-gray-50 w-full pt-16 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    {% if not product_list %}
-      <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
-        <div class="w-32 h-32 mx-auto mb-4">
-          <img src="{% static 'image/no-product.png' %}" alt="No product available" class="w-full h-full object-contain">
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No product found</h3>
-        <p class="text-gray-500 mb-6">Be the first to share football products with the community.</p>
-        <a href="{% url 'main:create_product' %}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-          Create Product
-        </a>
+    <!-- Header -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-1">Football Shop</h1>
+        <p class="text-gray-600">Browse and manage football products</p>
       </div>
 
-    {% else %}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for product in product_list %}
-          {% include 'card_product.html' with product=product %}
-        {% endfor %}
+      <div class="flex items-center gap-2">
+        <button id="btnRefresh" class="px-4 py-2 bg-white text-green-600 border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors">Refresh</button>
+        {% if user.is_authenticated %}
+          <button id="btnCreate" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Create Product</button>
+        {% else %}
+          <a href="{% url 'main:login' %}" class="px-4 py-2 bg-white text-green-600 border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors">Login to create</a>
+        {% endif %}
       </div>
+    </div>
 
-      <!-- Optional pagination -->
-      {% if page_obj or is_paginated %}
-        <div class="mt-8 flex items-center justify-center space-x-2">
-          {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 rounded-md border border-gray-300 text-sm">Previous</a>
-          {% endif %}
-          <span class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-          {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 rounded-md border border-gray-300 text-sm">Next</a>
-          {% endif %}
-        </div>
+    <!-- States -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-green-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading products...</p>
+    </div>
+
+    <div id="error" class="hidden bg-white rounded-lg border border-red-200 p-8 text-center">
+      <div class="text-red-600 text-3xl mb-2">⚠️</div>
+      <p id="errorMessage" class="text-red-700">Failed to load products.</p>
+      <button id="retryBtn" class="mt-4 px-4 py-2 bg-white text-red-600 border border-red-600 rounded-md hover:bg-red-600 hover:text-white transition-colors">Retry</button>
+    </div>
+
+    <div id="empty" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <div class="w-32 h-32 mx-auto mb-4">
+        <img src="{% static 'image/no-product.png' %}" alt="No product available" class="w-full h-full object-contain">
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No product found</h3>
+      <p class="text-gray-500 mb-6">There are no products yet. Create the first one!</p>
+      {% if user.is_authenticated %}
+      <button id="emptyCreate" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Create Product</button>
+      {% else %}
+      <a href="{% url 'main:login' %}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Login to create</a>
       {% endif %}
+    </div>
 
-    {% endif %}
+    <!-- Grid -->
+    <div id="grid" class="hidden"></div>
+
   </div>
 </div>
+
+<!-- include modal for create/update -->
+{% include 'modal_product.html' %}
+
+<!-- include DOMPurify for sanitization on the client -->
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+<!-- main products JS -->
+<script>
+  // pass endpoints from Django to JS
+  const PRODUCTS_LIST_ENDPOINT = "{% url 'main:show_json' %}";
+  const PRODUCTS_CREATE_ENDPOINT = "{% url 'main:add_product_ajax' %}";
+  const PRODUCTS_UPDATE_BASE = "{% url 'main:update_product_ajax' '00000000-0000-0000-0000-000000000000' %}";
+  const PRODUCTS_DELETE_BASE = "{% url 'main:delete_product_ajax' '00000000-0000-0000-0000-000000000000' %}";
+  const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+</script>
+<script src="{% static 'js/products.js' %}"></script>
+
 {% endblock content %}

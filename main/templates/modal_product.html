@@ -1,0 +1,95 @@
+<!-- Modal for Create / Update Product -->
+<div id="productModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-black bg-opacity-40">
+  <div id="productModalContent" class="bg-white rounded-lg shadow-lg w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto transform scale-95 opacity-0 transition-all duration-150">
+    <div class="p-4 border-b flex items-start justify-between">
+      <div>
+        <h3 id="productModalTitle" class="text-xl font-semibold">Create Product</h3>
+        <p id="productModalSub" class="text-sm text-gray-500">Fill in the details and publish</p>
+      </div>
+      <button type="button" class="text-gray-600" onclick="hideProductModal()">✕</button>
+    </div>
+
+    <div class="p-6">
+      <form id="productForm">
+        <input type="hidden" id="productId" name="id" />
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label class="text-sm font-medium">Name</label>
+            <input id="p_name" name="name" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Price (integer)</label>
+            <input id="p_price" name="price" type="number" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Stock</label>
+            <input id="p_stock" name="stock" type="number" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Category</label>
+            <select id="p_category" name="category" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+              <option value="">-- Select category --</option>
+              <option value="jersey">Jersey</option>
+              <option value="shoes">Sepatu</option>
+              <option value="ball">Bola</option>
+              <option value="accessories">Aksesoris</option>
+              <option value="equipment">Peralatan Latihan</option>
+              <option value="bag">Tas Olahraga</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Thumbnail URL</label>
+            <input id="p_thumbnail" name="thumbnail" type="url" placeholder="https://..." class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Description</label>
+            <textarea id="p_description" name="description" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+          </div>
+          <div class="flex items-center gap-3">
+            <input id="p_featured" name="is_featured" type="checkbox" class="w-4 h-4" />
+            <label class="text-sm">Mark as featured</label>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="p-4 border-t flex justify-end gap-3">
+      <button id="btnCancelProduct" class="px-4 py-2 border rounded-md" onclick="hideProductModal()">Cancel</button>
+      <button id="btnSubmitProduct" class="px-4 py-2 bg-green-600 text-white rounded-md">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div id="productDeleteModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-black bg-opacity-40">
+  <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+    <h3 class="text-lg font-semibold mb-2">Delete product?</h3>
+    <p class="text-sm text-gray-600 mb-4">This action cannot be undone.</p>
+    <div class="flex justify-end gap-3">
+      <button onclick="hideDeleteModal()" class="px-4 py-2 border rounded-md">Cancel</button>
+      <button id="btnConfirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // small helper show/hide
+  function showProductModal() {
+    const m = document.getElementById('productModal');
+    const content = document.getElementById('productModalContent');
+    m.classList.remove('hidden');
+    setTimeout(()=> { content.classList.remove('opacity-0','scale-95'); content.classList.add('opacity-100','scale-100'); }, 30);
+  }
+  function hideProductModal() {
+    const m = document.getElementById('productModal');
+    const content = document.getElementById('productModalContent');
+    content.classList.add('opacity-0','scale-95');
+    setTimeout(()=> m.classList.add('hidden'), 140);
+  }
+  function showDeleteModal() {
+    document.getElementById('productDeleteModal').classList.remove('hidden');
+  }
+  function hideDeleteModal() {
+    document.getElementById('productDeleteModal').classList.add('hidden');
+  }
+</script>
