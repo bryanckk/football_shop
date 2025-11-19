@@ -1,3 +1,4 @@
+import requests
 import datetime
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
@@ -16,6 +17,9 @@ from django.utils.html import strip_tags
 from django.http import HttpResponse, JsonResponse
 import json
 from datetime import datetime
+from django.utils.html import strip_tags
+import json
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 
 def _format_datetime_attr(obj, attr_name):
     """Return isoformat string if obj has attr_name and it's datetime-like, else None."""
@@ -76,26 +80,32 @@ def show_xml(request):
 
 def show_json(request):
     """
-    Return list of products as JSON.
-    Safe: will not assume presence of 'created_at' field.
-    Featured products are placed first; fallback ordering by id (newer id = newer).
+    Return list of products as JSON with optional filtering.
+    filter=all → all products
+    filter=my → products that belong to the logged-in user
     """
-    # gunakan ordering yang pasti ada: is_featured (field ada) lalu -id (pk)
-    qs = Product.objects.all().order_by('-is_featured', '-id')
+
+    filter_type = request.GET.get("filter", "all")
+
+    if filter_type == "my":
+        if not request.user.is_authenticated:
+            return JsonResponse([], safe=False)
+        qs = Product.objects.filter(user=request.user)
+    else:
+        qs = Product.objects.all()
+
+    qs = qs.order_by('-is_featured', '-id')
 
     data = []
     for p in qs:
-        # safe-get created value if exists
         created_val = None
-        # try common names, but do not crash if none exist
         for attr in ('created_at', 'created', 'created_on', 'timestamp', 'date_created'):
             if hasattr(p, attr):
                 val = getattr(p, attr)
-                # if datetime-like, convert to isoformat; else str()
                 try:
-                    created_val = val.isoformat() if val is not None else None
-                except Exception:
-                    created_val = str(val) if val is not None else None
+                    created_val = val.isoformat() if val else None
+                except:
+                    created_val = str(val) if val else None
                 break
 
         data.append({
@@ -107,10 +117,11 @@ def show_json(request):
             'thumbnail': p.thumbnail,
             'category': p.category,
             'is_featured': bool(p.is_featured),
-            'user_id': p.user_id if hasattr(p, 'user_id') else (p.user.id if getattr(p, 'user', None) else None),
+            'user_id': p.user_id if hasattr(p, 'user_id') else None,
             'created_at': created_val,
         })
     return JsonResponse(data, safe=False)
+
 
 def show_xml_by_id(request, product_id):
    try:
@@ -360,3 +371,107 @@ def ajax_logout(request):
         return JsonResponse({'status': 'ok'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'detail': str(e)}, status=400)
+
+def _iso_or_now_from_obj(obj):
+    """Return isoformat from common datetime attr, or now()."""
+    for attr in ('created_at', 'created', 'created_on', 'timestamp', 'date_created'):
+        if hasattr(obj, attr):
+            val = getattr(obj, attr)
+            try:
+                return val.isoformat() if val is not None else None
+            except Exception:
+                return str(val) if val is not None else None
+    return datetime.datetime.now().isoformat()
+
+def my_products_json(request):
+    if not request.user.is_authenticated:
+        return JsonResponse([], safe=False)
+
+    qs = Product.objects.filter(user=request.user).order_by('-is_featured', '-id')
+    out = []
+    for p in qs:
+        out.append({
+            'id': str(p.id),
+            'name': p.name,
+            'description': p.description or "",
+            'price': p.price or 0,
+            'stock': p.stock or 0,
+            'thumbnail': p.thumbnail or "",
+            'category': p.category or "",
+            'is_featured': bool(p.is_featured),
+            'user_id': p.user.id if getattr(p, 'user', None) else None,
+            'created_at': _iso_or_now_from_obj(p),
+        })
+    return JsonResponse(out, safe=False)
+
+@csrf_exempt
+def proxy_image(request):
+    url = request.GET.get('url', '')
+    if not url:
+        return HttpResponseBadRequest("Missing 'url' parameter")
+    try:
+        import requests
+    except Exception:
+        return HttpResponse("Server missing 'requests' library. Install with pip install requests", status=500)
+
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (compatible)'}
+        resp = requests.get(url, headers=headers, timeout=10, stream=True)
+        if resp.status_code != 200:
+            return HttpResponse(status=resp.status_code)
+
+        content_type = resp.headers.get('Content-Type', 'image/jpeg')
+        return HttpResponse(resp.content, content_type=content_type)
+    except Exception as e:
+        return HttpResponse(status=502)
+
+@csrf_exempt
+def create_news_flutter(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'detail': 'Use POST'}, status=405)
+    try:
+        body_text = request.body.decode('utf-8') if isinstance(request.body, (bytes, bytearray)) else request.body
+        data = json.loads(body_text or "{}")
+    except Exception:
+        data = {}
+    if data.get('name') is not None:
+        if not request.user.is_authenticated:
+            return JsonResponse({'status': 'error', 'detail': 'Authentication required'}, status=401)
+
+        try:
+            name = strip_tags(data.get('name', '')).strip()
+            description = strip_tags(data.get('description', '')).strip()
+            thumbnail = data.get('thumbnail', '')
+            category = data.get('category', '')
+            is_featured = bool(data.get('is_featured', False))
+            try:
+                price = int(data.get('price', 0) or 0)
+            except Exception:
+                price = 0
+            try:
+                stock = int(data.get('stock', 0) or 0)
+            except Exception:
+                stock = 0
+
+            p = Product.objects.create(
+                user=request.user,
+                name=name,
+                price=price,
+                description=description,
+                stock=stock,
+                thumbnail=thumbnail,
+                category=category,
+                is_featured=is_featured
+            )
+            return JsonResponse({
+                'status': 'success',
+                'product': {
+                    'id': str(p.id),
+                    'name': p.name,
+                    'price': p.price,
+                    'stock': p.stock
+                }
+            }, status=200)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'detail': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'detail': 'Unrecognized payload'}, status=400)
